@@ -1,0 +1,44 @@
+version: "3.4"
+services:
+  nginx:
+    container_name: std_nginx
+    build:
+      context: ./nginx/
+      dockerfile: Dockerfile
+    links:
+      - app
+    volumes:
+      - ./work/nim_jester:/opt/nim_jester
+    ports:
+      - "9090:80"
+  app:
+    container_name: std_nim
+    build:
+      context: ./nim/
+      dockerfile: Dockerfile
+    tty: true
+    privileged: true
+    volumes:
+      - ./work/nim_jester:/opt/nim_jester
+    links:
+      - mysql
+      - redis
+  mysql:
+    image: mysql:latest
+    container_name: std_mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_DATABASE=nim_db
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_USER=nim_app
+      - MYSQL_PASSWOR=nim_app_pw
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "43306:3306"
+  redis:
+    image: redis:latest
+    container_name: std_redis
+    ports:
+      - "46379:6379"
